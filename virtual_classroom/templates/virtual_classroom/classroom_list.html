@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="classroom-list">
+    <h2>Virtual Classrooms</h2>
+    
+    {% if user.is_teacher %}
+    <a href="{% url 'virtual_classroom:classroom_create' %}" class="btn btn-primary mb-3">
+        Create New Classroom
+    </a>
+    {% endif %}
+
+    <div class="row">
+        {% for classroom in classrooms %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ classroom.title }}</h5>
+                    <p class="card-text">Course: {{ classroom.course.title }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Starts at: {{ classroom.start_time|date:"F j, Y, g:i a" }}
+                        </small>
+                    </p>
+                    <a href="{% url 'virtual_classroom:classroom_detail' classroom.pk %}" 
+                       class="btn btn-primary">
+                        {% if classroom.is_active %}Join Session{% else %}View Details{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No virtual classrooms available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

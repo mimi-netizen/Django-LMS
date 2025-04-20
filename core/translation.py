@@ -3,6 +3,6 @@ from .models import NewsAndEvents, ActivityLog
 
 @register(NewsAndEvents)
 class NewsAndEventsTranslationOptions(TranslationOptions):
-    fields = ('title', 'summary',)
-    empty_values=None
+    fields = ('title', 'summary')
+    required_languages = ('en',)  # Make English required, others optional
 

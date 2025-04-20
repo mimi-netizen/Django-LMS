@@ -63,6 +63,7 @@ PROJECT_APPS = [
     "search.apps.SearchConfig",
     "quiz.apps.QuizConfig",
     "payments.apps.PaymentsConfig",
+    "virtual_classroom.apps.VirtualClassroomConfig",  # Add virtual classroom app
 ]
 
 # Combine all apps
@@ -148,7 +149,60 @@ LANGUAGES = (
     ("en", gettext("English")),
     ("fr", gettext("French")),
     ("es", gettext("Spanish")),
-    ("ru", gettext("Russia")),
+    ("sw", gettext("Swahili")),
+    ("ar", gettext("Arabic")),
+    ("de", gettext("German")),
+    ("zh-hans", gettext("Simplified Chinese")),
+    ("ja", gettext("Japanese")),
+    ("pt-br", gettext("Brazilian Portuguese")),
+    ("ru", gettext("Russian")),
+    ("it", gettext("Italian")),
+    ("hi", gettext("Hindi")),
+    ("tr", gettext("Turkish")),
+    ("ko", gettext("Korean")),
+    ("nl", gettext("Dutch")),
+    ("pl", gettext("Polish")),
+    ("da", gettext("Danish")),
+    ("fi", gettext("Finnish")),
+    ("nb", gettext("Norwegian")),
+    ("sv", gettext("Swedish")),
+    ("cs", gettext("Czech")),
+    ("hu", gettext("Hungarian")),
+    ("ro", gettext("Romanian")),
+    ("sk", gettext("Slovak")),
+    ("th", gettext("Thai")),  
+    ("vi", gettext("Vietnamese")),
+    ("el", gettext("Greek")),
+    ("bg", gettext("Bulgarian")),
+    ("hr", gettext("Croatian")),
+    ("sl", gettext("Slovenian")),
+    ("lt", gettext("Lithuanian")),
+    ("lv", gettext("Latvian")),
+    ("et", gettext("Estonian")),
+    ("is", gettext("Icelandic")),
+    ("ga", gettext("Irish")),
+    ("cy", gettext("Welsh")),
+    ("eu", gettext("Basque")),
+    ("ca", gettext("Catalan")),
+    ("gl", gettext("Galician")),
+    ("sq", gettext("Albanian")),
+    ("mk", gettext("Macedonian")),
+    ("sr", gettext("Serbian")),
+    ("bs", gettext("Bosnian")),
+    ("uk", gettext("Ukrainian")),
+    ("hy", gettext("Armenian")),
+    ("az", gettext("Azerbaijani")),
+    ("ka", gettext("Georgian")),
+    ("he", gettext("Hebrew")),
+    ("fa", gettext("Persian")),
+    ("ur", gettext("Urdu")),
+    ("bn", gettext("Bengali")),
+    ("ta", gettext("Tamil")),
+    ("te", gettext("Telugu")),
+    ("ml", gettext("Malayalam")),
+    ("km", gettext("Khmer")),
+    ("my", gettext("Burmese")),
+    ("id", gettext("Indonesian")),
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
@@ -251,3 +305,22 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 STUDENT_ID_PREFIX = config("STUDENT_ID_PREFIX", "ugr")
 LECTURER_ID_PREFIX = config("LECTURER_ID_PREFIX", "lec")
+
+# Channels configuration for WebSocket
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        # For production, use Redis:
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
+    }
+}
+
+# WebRTC configuration
+WEBRTC_ICE_SERVERS = [
+    {
+        "urls": ["stun:stun.l.google.com:19302"]
+    }
+]

@@ -1,15 +1,14 @@
 import os
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+from virtual_classroom.routing import websocket_urlpatterns
 
-import django
-from channels.http import AsgiHandler
-from channels.routing import ProtocolTypeRouter
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
-application = ProtocolTypeRouter(
-    {
-        "http": AsgiHandler(),
-        # Just HTTP for now. (We can add other protocols later.)
-    }
-)
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns)
+    ),
+})

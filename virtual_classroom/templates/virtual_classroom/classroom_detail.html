@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="classroom-container">
+    <div class="video-grid" id="video-grid"></div>
+    
+    <div class="controls">
+        <button id="toggle-video">Toggle Video</button>
+        <button id="toggle-audio">Toggle Audio</button>
+        <button id="share-screen">Share Screen</button>
+        <button id="start-recording">Start Recording</button>
+        <button id="toggle-whiteboard">Whiteboard</button>
+    </div>
+
+    <div class="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Type a message...">
+    </div>
+
+    <canvas id="whiteboard" style="display: none;"></canvas>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'virtual_classroom/js/webrtc.js' %}"></script>
+<script>
+    const roomName = "{{ object.id }}";
+    const iceServers = {{ ice_servers|safe }};
+</script>
+{% endblock %}
+{% endblock %}
