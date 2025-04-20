@@ -1,30 +1,101 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'virtual_classroom/css/classroom.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="classroom-container">
-    <div class="video-grid" id="video-grid"></div>
-    
-    <div class="controls">
-        <button id="toggle-video">Toggle Video</button>
-        <button id="toggle-audio">Toggle Audio</button>
-        <button id="share-screen">Share Screen</button>
-        <button id="start-recording">Start Recording</button>
-        <button id="toggle-whiteboard">Whiteboard</button>
-    </div>
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'virtual_classroom:classroom_list' %}">{% trans 'Virtual Classrooms' %}</a></li>
+        <li class="breadcrumb-item active">{{ object.title }}</li>
+    </ol>
+</nav>
 
-    <div class="chat-container">
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type a message...">
+<div class="manage-wrap">
+    <div class="d-flex">
+        {% if request.user.is_lecturer %}
+        <div>
+            <button class="btn btn-danger" id="start-recording">
+                <i class="fas fa-record-vinyl"></i> {% trans 'Start Recording' %}
+            </button>
+            <button class="btn btn-primary" id="toggle-whiteboard">
+                <i class="fas fa-chalkboard"></i> {% trans 'Toggle Whiteboard' %}
+            </button>
+        </div>
+        {% endif %}
+        <div class="ms-auto">
+            <span class="text-muted">
+                <i class="fas fa-clock"></i> {% trans 'Duration:' %} {{ object.duration }} {% trans 'minutes' %}
+            </span>
+        </div>
     </div>
-
-    <canvas id="whiteboard" style="display: none;"></canvas>
 </div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="video-grid" id="video-grid"></div>
+                <div class="controls bg-light p-2">
+                    <button class="btn btn-light" id="toggle-video">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="btn btn-light" id="toggle-audio">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="btn btn-light" id="share-screen">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button class="btn btn-light" id="toggle-whiteboard">
+                        <i class="fas fa-chalkboard"></i>
+                    </button>
+                    {% if request.user.is_lecturer %}
+                    <button class="btn btn-danger" id="start-recording">
+                        <i class="fas fa-record-vinyl"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                <canvas id="whiteboard" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{% trans 'Participants' %}</h5>
+            </div>
+            <div class="card-body">
+                <div id="participants-list"></div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{% trans 'Chat' %}</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input p-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chat-input" placeholder="{% trans 'Type a message...' %}">
+                        <button class="btn btn-primary" id="send-message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'virtual_classroom/js/webrtc.js' %}"></script>
-<script>
-    const roomName = "{{ object.id }}";
-    const iceServers = {{ ice_servers|safe }};
-</script>
-{% endblock %}
+<script src="{% static 'virtual_classroom/js/whiteboard.js' %}"></script>
+<script src="{% static 'virtual_classroom/js/recording.js' %}"></script>
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.views.generic import ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
+from django.conf import settings  # Add this import
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .models import VirtualClassroom, Recording
@@ -13,7 +14,14 @@ class ClassroomListView(LoginRequiredMixin, ListView):
     context_object_name = 'classrooms'
 
     def get_queryset(self):
-        return VirtualClassroom.objects.filter(course__students=self.request.user)
+        user = self.request.user
+        if user.is_superuser:
+            return VirtualClassroom.objects.all()
+        elif user.is_lecturer:
+            return VirtualClassroom.objects.filter(course__allocated_course__lecturer=user)
+        else:  # student
+            enrolled_courses = Course.objects.filter(students=user)
+            return VirtualClassroom.objects.filter(course__in=enrolled_courses)
 
 class ClassroomDetailView(LoginRequiredMixin, DetailView):
     model = VirtualClassroom
@@ -21,13 +29,14 @@ class ClassroomDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['ice_servers'] = self.request.settings.WEBRTC_ICE_SERVERS
+        context['ice_servers'] = settings.WEBRTC_ICE_SERVERS  # Fix settings access
         return context
 
 class ClassroomCreateView(LoginRequiredMixin, CreateView):
     model = VirtualClassroom
     template_name = 'virtual_classroom/classroom_form.html'
     fields = ['course', 'title', 'start_time', 'duration']
+    success_url = '/classroom/'  # Add success_url
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user

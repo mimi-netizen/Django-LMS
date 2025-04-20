@@ -1,39 +1,55 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Virtual Classrooms' %} | {% trans 'Learning management system' %}{% endblock title %}
 
 {% block content %}
-<div class="classroom-list">
-    <h2>Virtual Classrooms</h2>
-    
-    {% if user.is_teacher %}
-    <a href="{% url 'virtual_classroom:classroom_create' %}" class="btn btn-primary mb-3">
-        Create New Classroom
-    </a>
-    {% endif %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item active">{% trans 'Virtual Classrooms' %}</li>
+    </ol>
+</nav>
 
+{% if request.user.is_superuser or request.user.is_lecturer %}
+<div class="manage-wrap">
+    <a class="btn btn-primary" href="{% url 'virtual_classroom:classroom_create' %}">
+        <i class="fas fa-plus"></i>{% trans 'Create New Classroom' %}
+    </a>
+</div>
+{% endif %}
+
+<div class="title-1"><i class="fas fa-video"></i> {% trans 'Virtual Classrooms' %}</div>
+<br><br>
+
+{% include 'snippets/messages.html' %}
+
+<div class="container-fluid">
     <div class="row">
         {% for classroom in classrooms %}
-        <div class="col-md-4 mb-3">
+        <div class="col-md-4 mb-4">
             <div class="card">
+                <div class="card-header {% if classroom.is_active %}bg-success{% else %}bg-secondary{% endif %} text-white">
+                    <h5 class="card-title mb-0">{{ classroom.title }}</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ classroom.title }}</h5>
-                    <p class="card-text">Course: {{ classroom.course.title }}</p>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ classroom.course.title }}</h6>
                     <p class="card-text">
-                        <small class="text-muted">
-                            Starts at: {{ classroom.start_time|date:"F j, Y, g:i a" }}
-                        </small>
+                        <i class="fas fa-calendar"></i> {{ classroom.start_time|date:"F j, Y, g:i a" }}<br>
+                        <i class="fas fa-clock"></i> {% trans 'Duration:' %} {{ classroom.duration }} {% trans 'minutes' %}
                     </p>
-                    <a href="{% url 'virtual_classroom:classroom_detail' classroom.pk %}" 
-                       class="btn btn-primary">
-                        {% if classroom.is_active %}Join Session{% else %}View Details{% endif %}
+                    <a href="{% url 'virtual_classroom:classroom_detail' classroom.pk %}" class="btn btn-primary">
+                        {% if classroom.is_active %}{% trans 'Join Session' %}{% else %}{% trans 'View Details' %}{% endif %}
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="col-12">
-            <p>No virtual classrooms available.</p>
+        <div class="col-12 text-center">
+            <h4 class="text-muted mt-5">
+                <i class="fas fa-video"></i> {% trans 'No virtual classrooms available.' %}
+            </h4>
         </div>
         {% endfor %}
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
