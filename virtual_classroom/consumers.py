@@ -1,5 +1,6 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 import json
+from .models import VirtualClassroom, ChatMessage
 
 class ClassroomConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -20,7 +21,9 @@ class ClassroomConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, content):
         message_type = content.get('type')
-        if message_type == 'whiteboard_data':
+        if message_type == 'chat_message':
+            await self.handle_chat_message(content)
+        elif message_type == 'whiteboard_data':
             await self.handle_whiteboard_data(content)
         elif message_type == 'recording_started':
             await self.handle_recording_signal(content)
@@ -30,6 +33,21 @@ class ClassroomConsumer(AsyncJsonWebsocketConsumer):
                 {
                     'type': 'broadcast_message',
                     'message': content
+                }
+            )
+
+    async def handle_chat_message(self, data):
+        message = data.get('message')
+        if message:
+            # Save chat message to database
+            chat_message = await self.save_chat_message(message)
+            # Broadcast to all participants
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender': self.scope['user'].username
                 }
             )
 
@@ -63,6 +81,13 @@ class ClassroomConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'type': 'recording_signal',
             'action': event['action']
+        })
+
+    async def chat_message(self, event):
+        await self.send_json({
+            'type': 'chat_message',
+            'message': event['message'],
+            'sender': event['sender']
         })
 
     async def broadcast_message(self, event):

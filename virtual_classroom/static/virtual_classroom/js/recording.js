@@ -1,26 +1,40 @@
-class ClassroomRecorder {
-    constructor(stream, socket) {
+class RecordingHandler {
+    constructor(stream, socket, roomId) {
         this.stream = stream;
         this.socket = socket;
-        this.chunks = [];
+        this.roomId = roomId;
         this.mediaRecorder = null;
-        this.setupRecorder();
+        this.recordedChunks = [];
+        this.isRecording = false;
+        this.init();
     }
 
-    setupRecorder() {
-        this.mediaRecorder = new MediaRecorder(this.stream);
+    init() {
+        const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+        this.mediaRecorder = new MediaRecorder(this.stream, options);
         
-        this.mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) {
-                this.chunks.push(e.data);
+        this.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                this.recordedChunks.push(event.data);
             }
         };
 
         this.mediaRecorder.onstop = () => {
-            const blob = new Blob(this.chunks, { type: 'video/webm' });
+            const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
             this.saveRecording(blob);
-            this.chunks = [];
+            this.recordedChunks = [];
         };
+
+        document.getElementById('start-recording').onclick = () => this.toggleRecording();
+    }
+
+    toggleRecording() {
+        if (!this.isRecording) {
+            this.startRecording();
+        } else {
+            this.stopRecording();
+        }
+        this.isRecording = !this.isRecording;
     }
 
     startRecording() {
@@ -42,12 +56,15 @@ class ClassroomRecorder {
     async saveRecording(blob) {
         const formData = new FormData();
         formData.append('recording', blob);
-        
+        formData.append('room_id', this.roomId);
+
         try {
-            await fetch('/virtual_classroom/save-recording/', {
+            const response = await fetch('/virtual_classroom/save-recording/', {
                 method: 'POST',
                 body: formData
             });
+            const data = await response.json();
+            console.log('Recording saved:', data);
         } catch (error) {
             console.error('Failed to save recording:', error);
         }

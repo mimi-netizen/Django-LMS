@@ -17,12 +17,22 @@
 
 <div class="manage-wrap">
     <div class="d-flex">
-        {% if request.user.is_lecturer %}
+        {% if request.user.is_lecturer or request.user.is_superuser %}
         <div>
-            <button class="btn btn-danger" id="start-recording">
+            <a href="{% url 'virtual_classroom:classroom_edit' object.pk %}" class="btn btn-light me-2">
+                <i class="fas fa-pencil-alt"></i> {% trans 'Edit Details' %}
+            </a>
+            <button class="btn {% if object.is_active %}btn-danger{% else %}btn-success{% endif %}" 
+                    id="toggle-session" 
+                    data-room-id="{{ object.id }}"
+                    data-active="{{ object.is_active|yesno:'true,false' }}">
+                <i class="fas {% if object.is_active %}fa-stop-circle{% else %}fa-play-circle{% endif %}"></i>
+                {% if object.is_active %}{% trans 'End Session' %}{% else %}{% trans 'Start Session' %}{% endif %}
+            </button>
+            <button class="btn btn-danger" id="header-start-recording">
                 <i class="fas fa-record-vinyl"></i> {% trans 'Start Recording' %}
             </button>
-            <button class="btn btn-primary" id="toggle-whiteboard">
+            <button class="btn btn-primary" id="header-toggle-whiteboard">
                 <i class="fas fa-chalkboard"></i> {% trans 'Toggle Whiteboard' %}
             </button>
         </div>
@@ -41,20 +51,20 @@
             <div class="card-body p-0">
                 <div class="video-grid" id="video-grid"></div>
                 <div class="controls bg-light p-2">
-                    <button class="btn btn-light" id="toggle-video">
+                    <button class="btn btn-light" id="controls-toggle-video">
                         <i class="fas fa-video"></i>
                     </button>
-                    <button class="btn btn-light" id="toggle-audio">
+                    <button class="btn btn-light" id="controls-toggle-audio">
                         <i class="fas fa-microphone"></i>
                     </button>
-                    <button class="btn btn-light" id="share-screen">
+                    <button class="btn btn-light" id="controls-share-screen">
                         <i class="fas fa-desktop"></i>
                     </button>
-                    <button class="btn btn-light" id="toggle-whiteboard">
+                    <button class="btn btn-light" id="controls-toggle-whiteboard">
                         <i class="fas fa-chalkboard"></i>
                     </button>
                     {% if request.user.is_lecturer %}
-                    <button class="btn btn-danger" id="start-recording">
+                    <button class="btn btn-danger" id="controls-start-recording">
                         <i class="fas fa-record-vinyl"></i>
                     </button>
                     {% endif %}
@@ -95,7 +105,25 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Load scripts in correct order -->
+<script src="{% static 'virtual_classroom/js/classroom.js' %}"></script>
 <script src="{% static 'virtual_classroom/js/webrtc.js' %}"></script>
 <script src="{% static 'virtual_classroom/js/whiteboard.js' %}"></script>
 <script src="{% static 'virtual_classroom/js/recording.js' %}"></script>
+
+<script type="text/javascript">
+    // Pass configuration from Django context
+    window.CLASSROOM_CONFIG = {
+        roomId: '{{ object.id }}',
+        isActive: "{{ object.is_active|yesno:'true,false' }}",
+        isLecturer: "{{ request.user.is_lecturer|yesno:'true,false' }}",
+        csrfToken: '{{ csrf_token }}',
+        urls: {
+            activate: '{% url "virtual_classroom:activate_classroom" object.id %}',
+            deactivate: '{% url "virtual_classroom:deactivate_classroom" object.id %}',
+            saveRecording: '{% url "virtual_classroom:save_recording" object.id %}'
+        }
+    };
+    console.log('CLASSROOM_CONFIG:', window.CLASSROOM_CONFIG);
+</script>
 {% endblock %}
